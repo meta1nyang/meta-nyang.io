@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>앤드류에게 — 이반</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Pretendard:wght@300;400&display=swap');
+
+:root{
+--bg: #07070a;
+--bg-edge: #000000;
+--paper: #e9e2d3;
+--paper-dim: #9a9488;
+--ember: #b23a2f;
+--ember-glow: #e05a3d;
+--hairline: rgba(233,226,211,0.12);
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+margin:0; padding:0;
+background: var(--bg-edge);
+height:100%;
+overflow:hidden;
+}
+
+body{
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:
+radial-gradient(ellipse at 50% 30%, var(--bg) 0%, var(--bg-edge) 72%);
+font-family: 'Pretendard', -apple-system, sans-serif;
+color: var(--paper);
+}
+
+/* ---------- start overlay ---------- */
+#startOverlay{
+position:fixed; inset:0;
+background: var(--bg-edge);
+display:flex; flex-direction:column; align-items:center; justify-content:center;
+gap:22px;
+z-index:50;
+cursor:pointer;
+transition: opacity 1s ease;
+}
+#startOverlay.hidden{ opacity:0; pointer-events:none; }
+
+.ember-dot{
+width:10px; height:10px; border-radius:50%;
+background: var(--ember-glow);
+box-shadow: 0 0 12px 4px rgba(224,90,61,0.55);
+animation: flicker 2.6s ease-in-out infinite;
+}
+@keyframes flicker{
+0%,100%{ opacity:0.55; box-shadow:0 0 10px 3px rgba(224,90,61,0.45); }
+45%{ opacity:1; box-shadow:0 0 18px 6px rgba(224,90,61,0.75); }
+60%{ opacity:0.7; box-shadow:0 0 8px 2px rgba(224,90,61,0.4); }
+}
+
+#startOverlay p{
+font-family:'Pretendard', sans-serif;
+font-weight:300;
+letter-spacing:0.08em;
+font-size:13px;
+color: var(--paper-dim);
+}
+
+/* ---------- stage ---------- */
+#stage{
+width:min(560px, 92vw);
+max-height:94vh;
+display:flex; flex-direction:column; align-items:center;
+gap:20px;
+opacity:0;
+transition: opacity 1.4s ease;
+}
+#stage.visible{ opacity:1; }
+
+#portrait-wrap{
+position:relative;
+width:min(300px, 62vw);
+}
+#portrait{
+width:100%;
+display:block;
+filter: saturate(0.75) contrast(1.05) brightness(0.92);
+animation: breathe 6s ease-in-out infinite;
+}
+@keyframes breathe{
+0%,100%{ transform:scale(1); filter:saturate(0.75) contrast(1.05) brightness(0.92); }
+50%{ transform:scale(1.015); filter:saturate(0.8) contrast(1.08) brightness(0.97); }
+}
+#portrait-wrap::after{
+content:"";
+position:absolute; inset:-18%;
+background: radial-gradient(ellipse at center, rgba(224,90,61,0.10) 0%, rgba(0,0,0,0) 70%);
+pointer-events:none;
+}
+
+#letter{
+width:100%;
+max-height:40vh;
+overflow-y:auto;
+padding: 22px 26px;
+border-top: 1px solid var(--hairline);
+border-bottom: 1px solid var(--hairline);
+font-family:'Nanum Myeongjo', serif;
+font-size:16px;
+line-height:1.95;
+letter-spacing:0.01em;
+scroll-behavior:smooth;
+}
+#letter::-webkit-scrollbar{ width:4px; }
+#letter::-webkit-scrollbar-thumb{ background: var(--hairline); }
+#letter::-webkit-scrollbar-track{ background: transparent; }
+
+#letter p{
+margin:0 0 16px 0;
+color: var(--paper);
+opacity:0;
+animation: rise 0.6s ease forwards;
+}
+#letter p:last-child{ margin-bottom:4px; }
+@keyframes rise{ from{ opacity:0; transform: translateY(6px); } to{ opacity:1; transform:translateY(0); } }
+
+#letter p.signature{
+margin-top:6px;
+text-align:right;
+font-style:italic;
+color: var(--ember-glow);
+}
+
+.caret{
+display:inline-block;
+width:0.5em;
+color: var(--ember-glow);
+animation: blink 0.9s steps(1) infinite;
+}
+@keyframes blink{ 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
+
+#replay{
+opacity:0;
+pointer-events:none;
+margin-top:2px;
+background:none;
+border:1px solid var(--hairline);
+color: var(--paper-dim);
+font-family:'Pretendard', sans-serif;
+font-size:12px;
+letter-spacing:0.08em;
+padding:9px 18px;
+border-radius:2px;
+cursor:pointer;
+transition: opacity 0.8s ease, border-color 0.3s ease, color 0.3s ease;
+}
+#replay.visible{ opacity:1; pointer-events:auto; }
+#replay:hover{ border-color: var(--ember-glow); color: var(--paper); }
+
+@media (prefers-reduced-motion: reduce){
+#portrait{ animation:none; }
+.ember-dot{ animation:none; }
+}
+
+@media (max-width: 420px){
+#letter{ font-size:15px; padding:18px 18px; }
+}
+</style>
+</head>
+<body>
+
+<div id="startOverlay">
+<div class="ember-dot"></div>
+<p>클릭하여 재생</p>
+</div>
+
+<audio id="bgm" preload="auto" src="https://cropgif.net/audio/1783427193538-11a14bc5-6c37-4f69-b7eb-8126aa13f203.mp3"></audio>
+
+<div id="stage">
+<div id="portrait-wrap">
+<img id="portrait" src="https://i.ibb.co/VdVQKj0/404-20260707212321.png" alt="">
+</div>
+<div id="letter"></div>
+<button id="replay">다시 보기</button>
+</div>
+
+<script>
+(function(){
+const scenes = [
+"앤드류.",
+"여기는 이상한 곳이야. 시간도, 통증도 없는데... 이상하게 네 생각만은 그대로 남아 있어.",
+"내가 너를 어떻게 대했는지, 여기 와서야 제대로 보였어. 지켜준다면서 가뒀고, 걱정한다면서 아프게 했어.",
+"네가 혼자 완성하고 싶어했던 걸, 나는 내 이름으로 남기고 싶어했지. '유산'이라는 그럴듯한 말로 포장했지만, 사실은 그냥... 사라지는 게 무서웠던 것뿐이야.",
+"네가 문을 잠그고 숨던 밤들이 있었지. 그땐 그게 얼마나 큰 잘못인지도 몰랐어. 미안해할 자격조차 없었는데, 이제 와서 미안하다는 말을 해.",
+"네가 짐도 제대로 못 챙기고 떠나던 날, 나는 널 붙잡는 대신 네가 만든 걸 세상에 던져버렸어. 그게 얼마나 비겁한 짓이었는지 이제는 알아.",
+"미안해. 정말 미안해, 앤드류. 이 말이 너무 늦었다는 것도 알아.",
+"그래도 언젠가 이 말이 닿는다면... 부디 나 때문에 더는 아파하지 말고, 네가 원하는 삶을 살아줘.",
+"이번엔, 아무도 널 붙잡지 않는 곳에서. 편안하기를.",
+"— 이반"
+ ];
+
+const FALLBACK_MS = 158000; // 2:38
+const START_DELAY = 3000;
+const PAUSE_BETWEEN = 900;
+const END_RATIO = 0.90;
+const MIN_CHAR_MS = 60;
+const MAX_CHAR_MS = 320;
+
+const overlay = document.getElementById('startOverlay');
+const stage = document.getElementById('stage');
+const letterEl = document.getElementById('letter');
+const replayBtn = document.getElementById('replay');
+const audio = document.getElementById('bgm');
+
+let started = false;
+
+function typeScene(idx, perChar, onDone){
+if(idx >= scenes.length){ onDone(); return; }
+const text = scenes[idx];
+const isSignature = text.trim().startsWith('—');
+
+const p = document.createElement('p');
+if(isSignature) p.className = 'signature';
+const textSpan = document.createElement('span');
+const caret = document.createElement('span');
+caret.className = 'caret';
+caret.textContent = '▌';
+p.appendChild(textSpan);
+p.appendChild(caret);
+letterEl.appendChild(p);
+letterEl.scrollTop = letterEl.scrollHeight;
+
+let i = 0;
+(function step(){
+textSpan.textContent = text.slice(0, i);
+letterEl.scrollTop = letterEl.scrollHeight;
+if(i < text.length){
+i++;
+setTimeout(step, perChar);
+} else {
+caret.remove();
+setTimeout(()=> typeScene(idx+1, perChar, onDone), PAUSE_BETWEEN);
+}
+})();
+}
+
+function runLetter(durationMs){
+const totalChars = scenes.reduce((a,s)=>a+s.length, 0);
+const pauseTotal = PAUSE_BETWEEN * (scenes.length - 1);
+const available = Math.max(1000, durationMs*END_RATIO - START_DELAY - pauseTotal);
+let perChar = available / totalChars;
+perChar = Math.min(MAX_CHAR_MS, Math.max(MIN_CHAR_MS, perChar));
+
+setTimeout(()=>{
+typeScene(0, perChar, ()=>{
+replayBtn.classList.add('visible');
+});
+}, START_DELAY);
+}
+
+function beginExperience(){
+if(started) return;
+started = true;
+overlay.classList.add('hidden');
+stage.classList.add('visible');
+audio.currentTime = 0;
+audio.play().catch(()=>{});
+
+let launched = false;
+function launch(){
+if(launched) return;
+launched = true;
+const dur = (audio.duration && isFinite(audio.duration)) ? audio.duration*1000 : FALLBACK_MS;
+runLetter(dur);
+}
+
+if(audio.readyState >= 1 && isFinite(audio.duration) && audio.duration > 0){
+launch();
+} else {
+audio.addEventListener('loadedmetadata', launch, { once:true });
+setTimeout(launch, 2000); // fallback if metadata never fires
+}
+}
+
+overlay.addEventListener('click', beginExperience);
+
+replayBtn.addEventListener('click', function(){
+location.reload();
+});
+})();
+</script>
+</body>
+</html>
